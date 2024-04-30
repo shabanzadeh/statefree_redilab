@@ -5,4 +5,4 @@ Open a command prompt at the root of the application's folder and cd backend.
 
 2. Install the backend dependencies: pip install -r requirements.txt
 
-3. Run: uvicorn app:index --reload
+3. Run: uvicorn main:app --reload
