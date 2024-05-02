@@ -1,12 +1,13 @@
 from fastapi import APIRouter
 from models.user import User
+from models.user import UserDisplay
 from schemas.user import users_serializer
 from bson import ObjectId
 from config.db import collection
 
-user = APIRouter()
+user = APIRouter(prefix="/user", tags=['user'])
 
-@user.post("/")
+@user.post("")
 async def create_user(user: User):
     _id = collection.insert_one(dict(user))
     user = users_serializer(collection.find({"_id": _id.inserted_id}))

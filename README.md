@@ -37,4 +37,4 @@ on macOS/Linux
 
 ## Run the Application
 
-    `uvicorn main:app --reload`
+    uvicorn main:app --reload
