@@ -13,12 +13,12 @@ async def create_user(user: User):
     user = users_serializer(collection.find({"_id": _id.inserted_id}))
     return {"status": "Ok","data": user}
 
-@user.get("/")
+@user.get("")
 async def find_all_users():
     users = users_serializer(collection.find())
     return {"status": "Ok","data": users}
             
-@user.get("/{id}")
+@user.get("{id}")
 async def get_one_user(id: str):
    user = users_serializer(collection.find({"_id": ObjectId(id)}))
    return {"status": "Ok","data": user}
