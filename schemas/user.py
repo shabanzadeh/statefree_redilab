@@ -9,7 +9,9 @@ def user_serializer(user) -> dict:
         'id': str(user["_id"]),
         'name': user["name"],
         'email': user["email"],
-        "password": hashed_password
+        "password": hashed_password,
+        'creat_at':user["creat_at"]
+        
     }
 
 
