@@ -7,6 +7,7 @@ To set up a virtual environment for this application, follow these steps:
 2. Create a directory named venv:
 
     `mkdir venv`
+
 3. Navigate into 'venv
 
     `cd venv`
@@ -19,11 +20,12 @@ To set up a virtual environment for this application, follow these steps:
 
 on Windows:
 
-    `cd venv/Scripts/activate`
+` cd venv/Scripts/activate`
 
 on macOS/Linux
 
-    `cd venv/bin/activate`
+`cd venv/bin/activate`
+
 # Managing the Stack(Backend)
 ## Install Dependencies
 
