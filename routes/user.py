@@ -17,22 +17,11 @@ async def create_user(user: User):
 
 @user.get("")
 async def get_user():
-    userdata =  collection.find({}, {"password": 0})
+    userdata =  collection.find({}, {"_id": 0})
     result_dicts = [doc for doc in userdata]
-    response_data = json_util.dumps(result_dicts)
-    return JSONResponse(content=response_data)
+    return result_dicts
     
-
-
-#@user.get("")
-#async def find_all_users():
-    #users = users_serializer(collection.find())
-    #return {"status": "Ok","data": users}
             
-@user.get("{id}")
-async def get_one_user(id: str):
-   user = users_serializer(collection.find({"_id": ObjectId(id)}))
-   return {"status": "Ok","data": user}
 
 @user.put("{id}")
 async def update_user(id: str, user: User):
