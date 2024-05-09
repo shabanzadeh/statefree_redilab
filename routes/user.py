@@ -1,10 +1,6 @@
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
-from bson import json_util
 from models.user import User
-
 from schemas.user import users_serializer
-from bson import ObjectId
 from config.db import collection
 
 user = APIRouter(prefix="/user", tags=['user'])
