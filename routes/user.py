@@ -16,6 +16,6 @@ async def get_user(user: User):
     userdata =  collection.find({}, {"_id": 0})
     result_dicts = [doc for doc in userdata]
     return result_dicts
-    
+
        
 

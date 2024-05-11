@@ -37,6 +37,24 @@ on macOS/Linux
 
     `pip install fastapi mongodb uvicorn`
 
+
+## docker-compose between FastAPI and MongoDB
+
+Create docker-compose.yml file in the folder from which you launch your container.
+
+## Stack management
+
+1. Open a command prompt at the root of the application's folder.
+
+2. add a new .env file and then the codes in the env.simple in . env
+3. Run: `docker-compose up -d --build`
+3. View Container: `docker ps`
+
+4. Go inside a Container: `docker exec -it <nodeContainerID> sh` (replace <nodeContainerID>)
+5. Stop containers : `docker-compose down`
+6. Stop all running Containers: `docker stop $(docker ps -aq)`
+7. remove all Containers: `docker rm $(docker ps -aq)`
+
 ## Run the Application
 
-    uvicorn main:app --reload
+    docker-compose up --build
