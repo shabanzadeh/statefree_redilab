@@ -4,7 +4,7 @@ import os
 
 app = FastAPI()
 
-mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/redilab")
+mongo_uri = os.getenv("MONGO_URL", "mongodb://localhost:27017/redilab")
 print("MongoDB Verbindungs-URL:", mongo_uri)
 client = MongoClient(mongo_uri)
 

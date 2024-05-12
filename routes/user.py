@@ -3,6 +3,7 @@ from models.user import User
 from schemas.user import users_serializer
 from config.db import collection
 
+
 user = APIRouter(prefix="/user", tags=['user'])
 
 @user.post("")
