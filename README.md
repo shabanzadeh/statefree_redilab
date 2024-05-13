@@ -7,6 +7,7 @@ To set up a virtual environment for this application, follow these steps:
 2. Create a directory named venv:
 
     `mkdir venv`
+
 3. Navigate into 'venv
 
     `cd venv`
@@ -19,11 +20,12 @@ To set up a virtual environment for this application, follow these steps:
 
 on Windows:
 
-    `cd venv/Scripts/activate`
+`venv/Scripts/activate`
 
 on macOS/Linux
 
-    `cd venv/bin/activate`
+`venv/bin/activate`
+
 # Managing the Stack(Backend)
 ## Install Dependencies
 
@@ -31,10 +33,20 @@ on macOS/Linux
 
     `pip install -r requirements.txt`
 
-2. Additionally, install FastAPI, MongoDB and Uvicorn
 
-    `pip install fastapi mongodb uvicorn`
+## Stack management
+
+1. Open a command prompt at the root of the application's folder.
+
+2. add a new .env file and then the codes in the env.simple in . env
+3. Run: `docker-compose up -d --build`
+3. View Container: `docker ps`
+
+4. Go inside a Container: `docker exec -it <nodeContainerID> sh` (replace <nodeContainerID>)
+5. Stop containers : `docker-compose down`
+6. Stop all running Containers: `docker stop $(docker ps -aq)`
+7. remove all Containers: `docker rm $(docker ps -aq)`
 
 ## Run the Application
 
-    `Run: uvicorn main:app --reload`
+    docker-compose up --build
