@@ -3,3 +3,4 @@ uvicorn
 python-dotenv
 passlib
 pymongo
+bcrypt
