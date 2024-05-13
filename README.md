@@ -20,11 +20,11 @@ To set up a virtual environment for this application, follow these steps:
 
 on Windows:
 
-` cd venv/Scripts/activate`
+`venv/Scripts/activate`
 
 on macOS/Linux
 
-`cd venv/bin/activate`
+`venv/bin/activate`
 
 # Managing the Stack(Backend)
 ## Install Dependencies
@@ -33,14 +33,6 @@ on macOS/Linux
 
     `pip install -r requirements.txt`
 
-2. Additionally, install FastAPI, MongoDB and Uvicorn
-
-    `pip install fastapi mongodb uvicorn`
-
-
-## docker-compose between FastAPI and MongoDB
-
-Create docker-compose.yml file in the folder from which you launch your container.
 
 ## Stack management
 
