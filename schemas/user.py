@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr, constr, Field, validator
-from typing import List, Optional, Union
+from pydantic import BaseModel, EmailStr, Field, validator
+from typing import Union
 from datetime import datetime
 import re
 from fastapi import Query
@@ -28,6 +28,10 @@ class User(BaseModel):
             if not re.match(r"^(?:\+?49|0)(?:\d{2}\)?[ -]?\d{2}[ -]?\d{7,8}|\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4})$", value):
                 raise ValueError("Invalid phone number")
         return value
+
+
+     
+ 
 
 class UserCreate(User):
     pass
