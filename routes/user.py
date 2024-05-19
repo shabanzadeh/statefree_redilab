@@ -5,11 +5,14 @@ from config.db import collection
 from datetime import timedelta
 from db.hash import Hash
 from jose import jwt
-
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 
 
 user = APIRouter(prefix="/user", tags=['user'])
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 
 @user.post("/register")
@@ -37,7 +40,8 @@ async def login_user(user: User):
         raise HTTPException(status_code=400, detail="User not found")
     
     if Hash.verify(user.password, found_user["password"]):
-        return {"status": "login successful"}
+        token = jwt.encode({'key': 'value'}, SECRET_KEY, algorithm='HS256')
+        return token
     else:
         raise HTTPException(status_code=400, detail="Invalid credentials")
 
