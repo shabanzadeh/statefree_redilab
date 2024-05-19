@@ -1,4 +1,4 @@
-from hash import Hash
+from db.hash import Hash
 def user_serializer(user) -> dict:
     if "password" in user and user["password"]:
         hashed_password = Hash.bcrypt(user["password"])
@@ -9,8 +9,8 @@ def user_serializer(user) -> dict:
         'id': str(user["_id"]),
         'name': user["name"],
         'email': user["email"],
-        "password": hashed_password,
-        'creat_at':user["creat_at"]
+        "password": hashed_password
+        
         
     }
 
