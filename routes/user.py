@@ -1,11 +1,11 @@
 from fastapi import APIRouter,Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
 from schemas.user import User
 from db.models import users_serializer
 from config.db import collection
 from datetime import timedelta
 from db.hash import Hash
-from passlib.context import CryptContext
+from jose import jwt
+
 
 
 
