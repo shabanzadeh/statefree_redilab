@@ -1,18 +1,18 @@
-from fastapi import APIRouter,Depends, HTTPException, status
+from fastapi import APIRouter,Depends, HTTPException, status, Request
 from schemas.user import User
 from db.models import users_serializer
 from config.db import collection
 from datetime import timedelta
 from db.hash import Hash
 from jose import jwt
-from dotenv import load_dotenv
-import os
-load_dotenv()
+#from dotenv import load_dotenv
+#import os
+#load_dotenv()
 
 
 
 user = APIRouter(prefix="/user", tags=['user'])
-SECRET_KEY = os.getenv("SECRET_KEY")
+#SECRET_KEY = os.getenv("SECRET_KEY")
 
 
 @user.post("/register")
@@ -40,7 +40,7 @@ async def login_user(user: User):
         raise HTTPException(status_code=400, detail="User not found")
     
     if Hash.verify(user.password, found_user["password"]):
-        token = jwt.encode({'key': 'value'}, SECRET_KEY, algorithm='HS256')
+        token = jwt.encode({'key': 'value'}, "test", algorithm='HS256')
         return token
     else:
         raise HTTPException(status_code=400, detail="Invalid credentials")
@@ -52,5 +52,9 @@ async def get_user(user: User):
     result_dicts = [doc for doc in userdata]
     return result_dicts
 
+@user.get("/secure-endpoint")
+async def secure_endpoint(request: Request):
+    user = request.state
+    return {"message": f"You have access to this secure endpoint, user: {user}"}
        
 
