@@ -50,3 +50,34 @@ on macOS/Linux
 ## Run the Application
 
     docker-compose up --build
+## Tools and Technologies
+### MongoDB
+
+This application uses MongoDB as the database. Follow these steps to set up MongoDB:
+
+Install MongoDB:
+
+Visit the MongoDB Download Center and follow the instructions to install MongoDB on your system.
+
+Install MongoDB Compass:
+
+Download and install MongoDB Compass, a GUI for MongoDB, to visualize and manage your MongoDB data.
+
+### Docker Desktop
+
+Download and install Docker Desktop for your operating system.
+
+### Postman
+
+Download and install Postman to test and interact with your API endpoints.
+
+Managing MongoDB with Docker
+This application uses Docker to manage MongoDB. The docker-compose.yml file includes the configuration for the MongoDB service.
+
+### Using Postman
+Postman can be used to test the endpoints of the application. Here's how:
+
+Open Postman.
+Create a new request and set the appropriate method (GET, POST, etc.) and URL.
+Add headers and body as needed.
+Send the request and view the response.
