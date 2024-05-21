@@ -29,9 +29,6 @@ async def create_user(user: User):
     return {"status": "Ok","data": user}
  
 
-
-
-
 @user.post("/login")
 async def login_user(user: User):
     found_user = collection.find_one({"name": user.name, "email": user.email, "phone": user.phone})
@@ -40,10 +37,13 @@ async def login_user(user: User):
         raise HTTPException(status_code=400, detail="User not found")
     
     if Hash.verify(user.password, found_user["password"]):
-        token = jwt.encode({'key': 'value'}, "test", algorithm='HS256')
+       
+        token = jwt.encode({'name': found_user["name"], 'password': found_user["password"]}, "test", algorithm='HS256')
         return token
     else:
         raise HTTPException(status_code=400, detail="Invalid credentials")
+
+
 
 
 @user.get("")
@@ -54,7 +54,10 @@ async def get_user(user: User):
 
 @user.get("/secure-endpoint")
 async def secure_endpoint(request: Request):
-    user = request.state
-    return {"message": f"You have access to this secure endpoint, user: {user}"}
+    user = request.state.user
+    name = user.get("name")
+    password = user.get("password")
+    
+    return {"message": f"You have access to this secure endpoint, user: {name} and password: {password}"}
        
 

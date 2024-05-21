@@ -23,7 +23,7 @@ async def auth_middleware(request: Request, call_next):
     try:
         payload = jwt.decode(token, "test", algorithms=["HS256"])
         request.state.user = payload
-        print(payload)
+        
     except Exception as e:
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
