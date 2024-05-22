@@ -1,19 +1,14 @@
-from fastapi import APIRouter,Depends, HTTPException, status, Request
-from schemas.user import User
+from bson import ObjectId
+from fastapi import APIRouter, HTTPException, status, Request
 from db.models import users_serializer
+from schemas.user import User
 from config.db import collection
-from datetime import timedelta
 from db.hash import Hash
 from jose import jwt
-#from dotenv import load_dotenv
-#import os
-#load_dotenv()
-
+from utilities.helper import remove_field_document
 
 
 user = APIRouter(prefix="/user", tags=['user'])
-#SECRET_KEY = os.getenv("SECRET_KEY")
-
 
 @user.post("/register")
 async def create_user(user: User):
@@ -27,37 +22,40 @@ async def create_user(user: User):
     _id = collection.insert_one(dict(user))
     user = users_serializer(collection.find({"_id": _id.inserted_id}))
     return {"status": "Ok","data": user}
- 
+
 
 @user.post("/login")
 async def login_user(user: User):
-    found_user = collection.find_one({"name": user.name, "email": user.email, "phone": user.phone})
+    found_user = collection.find_one({"email": user.email})
     
     if not found_user:
         raise HTTPException(status_code=400, detail="User not found")
     
     if Hash.verify(user.password, found_user["password"]):
-       
-        token = jwt.encode({'name': found_user["name"], 'password': found_user["password"]}, "test", algorithm='HS256')
-        return token
+        token = jwt.encode({'sub': found_user["email"]}, "test", algorithm='HS256')
+        return {"token": token}
     else:
         raise HTTPException(status_code=400, detail="Invalid credentials")
 
-
-
+@user.get("/{user_id}")
+async def detail(user_id: str):
+    try:
+        user_obj_id = ObjectId(user_id)
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid ID format")
+    
+    user_detail = collection.find_one({"_id": user_obj_id})
+    if not user_detail:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find user with given ID")
+    
+    user_remove = remove_field_document(user_detail, ["password"])
+    user_remove["id"] = str(user_remove["_id"])
+    user_remove.pop("_id", None)
+    
+    return user_remove
 
 @user.get("")
-async def get_user(user: User):
-    userdata =  collection.find({}, {"_id": 0})
+async def get_user():
+    userdata = collection.find({}, {"_id": 0})
     result_dicts = [doc for doc in userdata]
     return result_dicts
-
-@user.get("/secure-endpoint")
-async def secure_endpoint(request: Request):
-    user = request.state.user
-    name = user.get("name")
-    password = user.get("password")
-    
-    return {"message": f"You have access to this secure endpoint, user: {name} and password: {password}"}
-       
-
