@@ -54,6 +54,9 @@ async def detail(user_id: str):
     
     return user_remove
 
+
+
+
 @user.get("")
 async def get_user():
     userdata = collection.find({}, {"_id": 0})

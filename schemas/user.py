@@ -33,9 +33,4 @@ class User(BaseModel):
      
  
 
-class UserCreate(User):
-    pass
 
-class UserInDB(User):
-    id: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
