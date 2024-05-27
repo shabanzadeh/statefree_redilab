@@ -6,9 +6,14 @@ from config.db import collection
 from db.hash import Hash
 from jose import jwt
 from utilities.helper import remove_field_document
+from fastapi import APIRouter, Depends
+from starlette.middleware.base import BaseHTTPMiddleware
+
+from middelware.auth import auth_middleware
 
 
 user = APIRouter(prefix="/user", tags=['user'])
+
 
 @user.post("/register")
 async def create_user(user: User):
@@ -37,7 +42,7 @@ async def login_user(user: User):
     else:
         raise HTTPException(status_code=400, detail="Invalid credentials")
 
-@user.get("/{user_id}")
+@user.get("/{user_id}", dependencies=[Depends(auth_middleware)])
 async def detail(user_id: str):
     try:
         user_obj_id = ObjectId(user_id)
