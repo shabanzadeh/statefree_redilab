@@ -34,7 +34,7 @@ async def login_user(user: User):
     found_user = collection.find_one({"email": user.email})
     
     if not found_user:
-        raise HTTPException(status_code=400, detail="User not found")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
     
     if Hash.verify(user.password, found_user["password"]):
         token = jwt.encode({'sub': found_user["email"]}, "test", algorithm='HS256')
