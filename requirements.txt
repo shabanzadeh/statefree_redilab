@@ -3,3 +3,6 @@ uvicorn
 python-dotenv
 passlib
 pymongo
+bcrypt
+python-jose
+pyjwt
