@@ -1,19 +1,14 @@
 from bson import ObjectId
-from fastapi import APIRouter, HTTPException, status, Request
+from fastapi import APIRouter, HTTPException, status, Depends
 from db.models import users_serializer
-from schemas.user import User
+from schemas.user import User, UserLogin
 from config.db import collection
 from db.hash import Hash
 from jose import jwt
 from utilities.helper import remove_field_document
-from fastapi import APIRouter, Depends
-from starlette.middleware.base import BaseHTTPMiddleware
-
 from middelware.auth import auth_middleware
 
-
 user = APIRouter(prefix="/user", tags=['user'])
-
 
 @user.post("/register")
 async def create_user(user: User):
@@ -26,18 +21,17 @@ async def create_user(user: User):
     
     _id = collection.insert_one(dict(user))
     user = users_serializer(collection.find({"_id": _id.inserted_id}))
-    return {"status": "Ok","data": user}
-
+    return {"status": "Ok", "data": user}
 
 @user.post("/login")
-async def login_user(user: User):
-    found_user = collection.find_one({"email": user.email})
+async def login_user(user: UserLogin):
+    found_user = collection.find_one({"name": user.name})
     
     if not found_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
     
     if Hash.verify(user.password, found_user["password"]):
-        token = jwt.encode({'sub': found_user["email"]}, "test", algorithm='HS256')
+        token = jwt.encode({'sub': found_user["name"]}, "test", algorithm='HS256')
         return {"token": token}
     else:
         raise HTTPException(status_code=400, detail="Invalid credentials")
@@ -58,9 +52,6 @@ async def detail(user_id: str):
     user_remove.pop("_id", None)
     
     return user_remove
-
-
-
 
 @user.get("")
 async def get_user():

@@ -31,6 +31,8 @@ class User(BaseModel):
 
 
      
- 
+class UserLogin(BaseModel):
+    name: str
+    password: str
 
 
