@@ -1,12 +1,11 @@
 from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Optional
 import re
-from fastapi import Query
 
 class User(BaseModel):
     name: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
-    phone: str = Field(..., regex=r"^(?:\+?49|0)(?:\d{2}\)?[ -]?\d{2}[ -]?\d{7,8}|\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4})$")
+    phone: str = Field(..., pattern=r"^(?:\+?49|0)(?:\d{2}\)?[ -]?\d{2}[ -]?\d{7,8}|\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4})$")
     password: str = Field(..., min_length=6, max_length=30)
 
     @validator('password')
