@@ -1,5 +1,6 @@
 from bson import ObjectId
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, UploadFile
+import shutil
 from db.models import users_serializer
 from schemas.user import User, UserLogin
 from config.db import collection
@@ -7,8 +8,22 @@ from db.hash import Hash
 from jose import jwt
 from utilities.helper import remove_field_document
 from middelware.auth import auth_middleware
+import os
+from db.uploaded_files import save_file, retrieve_file
 
 user = APIRouter(prefix="/user", tags=['user'])
+
+
+@user.post("/uploadfile/")
+async def create_upload_file(file: UploadFile):
+    upload_folder = "uploaded_files"
+    if not os.path.exists(upload_folder):
+        os.makedirs(upload_folder)
+    with open(f"uploaded_files/{file.filename}", "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    e = save_file(f"uploaded_files/{file.filename}", file.filename)
+    os.remove(f"uploaded_files/{file.filename}")
+    return {"filename": file.filename}
 
 
 @user.post("/register")
