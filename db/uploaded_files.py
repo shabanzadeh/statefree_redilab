@@ -4,7 +4,7 @@ import os
 
 # Connect to MongoDB
 try:
-    client = MongoClient("mongodb://localhost:27017/")
+    client = MongoClient("mongodb+srv://ReDiUser:1234rtyu@cluster0.tnsqcvc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
     db = client["filedb"]
     fs = gridfs.GridFS(db)
 except errors.ConnectionError:
