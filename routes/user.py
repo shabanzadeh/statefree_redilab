@@ -21,7 +21,7 @@ async def create_upload_file(file: UploadFile):
         os.makedirs(upload_folder)
     with open(f"uploaded_files/{file.filename}", "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    e = save_file(f"uploaded_files/{file.filename}", file.filename)
+    file_id = save_file(f"uploaded_files/{file.filename}", file.filename)
     os.remove(f"uploaded_files/{file.filename}")
     return {"filename": file.filename}
 
