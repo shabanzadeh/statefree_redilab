@@ -2,22 +2,69 @@ from bson import ObjectId
 from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, Form, Request
 from fastapi.responses import HTMLResponse
 import shutil
+import os
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 from db.models import users_serializer
 from schemas.user import User, UserLogin
 from schemas.info_save import Info
+from schemas.contact import ContactForm
 from config.db import collection, db, infos
 from db.hash import Hash
 from jose import jwt
 from utilities.helper import remove_field_document
 from middelware.auth import auth_middleware
 import os
+import json
 from db.uploaded_files import save_file, retrieve_file
 
 user = APIRouter(prefix="/user", tags=['user'])
 templating = Jinja2Templates(directory="templates")
 templating2 = Jinja2Templates(directory=".")
+
+
+@user.post("/message")
+async def message_user(contact: ContactForm):
+    """
+        Sending messages from the user
+
+        Accepts data from the contact form and sends it to a corporative email. If errors arise when sending
+        Email, Returns HTTP 400 Error.
+
+        - ** email **: email user sending a message.
+        - ** message **: Message from the user.
+    """
+
+    sender_email = contact.email
+    receiver_email = os.getenv(
+        'Receiver_email', "rediscoolstatefree@gmail.com")
+    subject = f"Message from user {contact.email}"
+    message_body = contact.message
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 587
+    smtp_username = os.getenv('Smtp_username', "rediscoolstatefree@gmail.com")
+    smtp_password = os.getenv('Smtp_password', "rkfw kogp tbut bkfo")
+
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(message_body, 'plain'))
+
+    try:
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        server.send_message(msg)
+        return {"status": "Ok", "detail": 'Email sent successfully!'}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=e)
+    finally:
+        server.quit()
 
 
 @user.post("/uploadfile/")
@@ -49,6 +96,17 @@ async def read_form(request: Request, email: str,):
         print(3)
         html_file_path = "i.html"
         return templating2.TemplateResponse("i.html", {"request": request, "data": email})
+
+
+@user.get("/submit_info/{email}", summary="Create pdf_file")
+async def submit_info(email: str):
+    found_user = infos.find_one({"email": email})
+    if found_user:
+        found_user = json.dumps(
+            str(found_user), ensure_ascii=False, indent=4)
+        return found_user
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
 
 
 @user.post("/save_info/{email}", summary="Saves all the completed information in the form")

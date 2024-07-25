@@ -42,7 +42,7 @@ class User(BaseModel):
         pattern = re.compile(r"^(?:\+?49|0)(?:\d{2}\)?[ -]?\d{2}[ -]?\d{7,8}|\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4})$")
         if not pattern.match(value):
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid phone number Invalid phone number. It must be in one of the following formats: '
+                status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid phone number. It must be in one of the following formats: '
                     '+49 30 12345678, 030 12345678, 030-12345678, or (030) 12345678'
             )
         return value
