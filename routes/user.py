@@ -3,23 +3,24 @@ from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, Form,
 from fastapi.responses import HTMLResponse
 import shutil
 import os
+import gridfs
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 from db.models import users_serializer
-from schemas.user import User, UserLogin
+from schemas.user import User, UserLogin, DeleteUser, ChangeUser
 from schemas.info_save import Info
 from schemas.contact import ContactForm
 from config.db import collection, db, infos
 from db.hash import Hash
 from jose import jwt
 from utilities.helper import remove_field_document
-from middelware.auth import auth_middleware
+from middelware.auth import auth_middleware, verify_admin_token, auth_middleware_username_return
 import os
 import json
-from db.uploaded_files import save_file, retrieve_file
+from db.uploaded_files import save_file, retrieve_file, delete_file, userFiles, getFile
 
 user = APIRouter(prefix="/user", tags=['user'])
 templating = Jinja2Templates(directory="templates")
@@ -68,7 +69,7 @@ async def message_user(contact: ContactForm):
 
 
 @user.post("/uploadfile/")
-async def create_upload_file(file: UploadFile):
+async def create_upload_file(file: UploadFile, name=Depends(auth_middleware_username_return)):
     """
     Upload a file
 
@@ -81,9 +82,35 @@ async def create_upload_file(file: UploadFile):
         os.makedirs(upload_folder)
     with open(f"uploaded_files/{file.filename}", "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    file_id = save_file(f"uploaded_files/{file.filename}", file.filename)
+    file_id = save_file(f"uploaded_files/{file.filename}", file.filename, name)
     os.remove(f"uploaded_files/{file.filename}")
     return {"filename": file.filename}
+
+
+@user.delete("/delete_file/{file_id}")
+async def delete_file_api(file_id: str):
+    if delete_file(file_id):
+        return {"message": f"File with ID {file_id} has been deleted successfully."}
+    else:
+        raise HTTPException(
+            status_code=404, detail=f"No file found with ID {file_id}.")
+
+
+@user.get("/user_files/{user_name}")
+async def get_user_files(user_name: str):
+    try:
+        return userFiles(user_name)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving files: {e}")
+
+
+@user.get("/file/{file_id}")
+def get_file(file_id: str):
+    try:
+        return getFile(file_id)
+    except gridfs.errors.NoFile:
+        raise HTTPException(status_code=404, detail="File not found")
 
 
 @user.get("/save_file/{email}", response_class=HTMLResponse, summary="Displays a form to fill it")
@@ -138,7 +165,10 @@ async def create_user(user: User):
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists")
-
+    existing_user = collection.find_one({"name": user.name})
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="A user with this name already exists")
     hashed_password = Hash.bcrypt(user.password)
     user.password = hashed_password
     _id = collection.insert_one(dict(user))
@@ -169,6 +199,41 @@ async def login_user(user: UserLogin):
         return {"token": token}
     else:
         raise HTTPException(status_code=400, detail="Invalid credentials")
+
+
+@user.get("/admin", dependencies=[Depends(verify_admin_token)])
+async def admin_panel(request: Request):
+    users = collection.find({"name": {"$ne": 'admin_statefree'}}, {"_id": 0})
+    users = list(users)
+    return users
+
+
+@user.post("/admin/edit/{name}", dependencies=[Depends(verify_admin_token)])
+async def user_change(name: str, request: Request, user: ChangeUser):
+    try:
+        result = collection.update_one(
+            {'name': name}, {'$set': {'email': user.email, 'phone': user.phone}})
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        return {"message": "User updated successfully"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
+
+@user.post("/admin/delete", dependencies=[Depends(verify_admin_token)])
+async def admin_delete(request: Request, user: DeleteUser):
+    if not user.name:
+        raise HTTPException(
+            status_code=400, detail="User name must be provided")
+
+    result = collection.delete_one({"name": user.name})
+
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"detail": f"User '{user.name}' deleted successfully"}
 
 
 @user.get("/{user_id}", dependencies=[Depends(auth_middleware)])

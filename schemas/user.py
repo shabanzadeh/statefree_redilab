@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, Field, validator
 from fastapi import HTTPException, status
 import re
 
+
 class User(BaseModel):
     name: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
@@ -30,7 +31,8 @@ class User(BaseModel):
 
     @validator('email')
     def email_valid(cls, value):
-        pattern = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+        pattern = re.compile(
+            r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
         if not pattern.match(value):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid email address'
@@ -39,11 +41,12 @@ class User(BaseModel):
 
     @validator('phone')
     def phone_valid(cls, value):
-        pattern = re.compile(r"^(?:\+?49|0)(?:\d{2}\)?[ -]?\d{2}[ -]?\d{7,8}|\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4})$")
+        pattern = re.compile(
+            r"^(?:\+?49|0)(?:\d{2}\)?[ -]?\d{2}[ -]?\d{7,8}|\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4})$")
         if not pattern.match(value):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid phone number. It must be in one of the following formats: '
-                    '+49 30 12345678, 030 12345678, 030-12345678, or (030) 12345678'
+                '+49 30 12345678, 030 12345678, 030-12345678, or (030) 12345678'
             )
         return value
 
@@ -55,6 +58,37 @@ class User(BaseModel):
             )
         return value
 
+
 class UserLogin(BaseModel):
     name: str
     password: str
+
+
+class DeleteUser(BaseModel):
+    name: str
+
+
+class ChangeUser(BaseModel):
+    email: str
+    phone: str = Field(...)
+
+    @validator('email')
+    def email_valid(cls, value):
+        pattern = re.compile(
+            r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+        if not pattern.match(value):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid email address'
+            )
+        return value
+
+    @validator('phone')
+    def phone_valid(cls, value):
+        pattern = re.compile(
+            r"^(?:\+?49|0)(?:\d{2}\)?[ -]?\d{2}[ -]?\d{7,8}|\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4})$")
+        if not pattern.match(value):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid phone number. It must be in one of the following formats: '
+                '+49 30 12345678, 030 12345678, 030-12345678, or (030) 12345678'
+            )
+        return value

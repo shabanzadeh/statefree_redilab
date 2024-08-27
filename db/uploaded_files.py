@@ -1,6 +1,9 @@
 from pymongo import MongoClient, errors
 import gridfs
 import os
+from fastapi.responses import StreamingResponse
+import base64
+from bson import ObjectId
 
 # Connect to MongoDB
 try:
@@ -15,7 +18,7 @@ except errors.ConnectionError:
     exit(1)  # Terminate the program if there is a connection error
 
 
-def save_file(file_path, file_name):
+def save_file(file_path, file_name, name):
     try:
         # Check if the file exists
         if not os.path.exists(file_path):
@@ -23,7 +26,7 @@ def save_file(file_path, file_name):
 
         # Open and save the file to GridFS
         with open(file_path, "rb") as file:
-            file_id = fs.put(file, filename=file_name)
+            file_id = fs.put(file, filename=file_name, user_name=name)
             print(f"File '{file_name}' saved with ID: {file_id}")
             return file_id
     except FileNotFoundError as e:
@@ -60,3 +63,73 @@ def retrieve_file(file_id):
         print(f"Permission denied to write the file: '{file_name}'.")
     except errors.PyMongoError as e:
         print(f"Error working with MongoDB: {e}")
+
+
+def delete_file(file_id):
+    try:
+        # Преобразование file_id в ObjectId
+        object_id = ObjectId(file_id)
+
+        # Проверка наличия файла
+        file = fs.find_one({"_id": object_id})
+        if file is None:
+            print(f"No file found in GridFS with ID: {file_id}.")
+            return False
+
+        # Удаление файла из GridFS
+        fs.delete(object_id)
+        print(f"File with ID {file_id} has been deleted successfully.")
+        return True
+    except gridfs.errors.NoFile:
+        print(f"No file found in GridFS with ID: {file_id}.")
+        return False
+    except errors.PyMongoError as e:
+        print(f"Error working with MongoDB: {e}")
+        return False
+    except Exception as e:
+        print(f"Invalid file ID: {e}")
+        return False
+
+
+def userFiles(name: str):
+    files = fs.find({"user_name": name})
+
+    # Создаем список для хранения информации о файлах
+    user_files = []
+
+    # Проходим по курсору, чтобы собрать информацию о файлах
+    for file in files:
+        file_info = {
+            "file_id": str(file._id),
+            "filename": file.filename,
+            "length": file.length,
+            "upload_date": file.uploadDate
+        }
+        user_files.append(file_info)
+
+    # Если файлов не найдено, возвращаем пустой список
+    if not user_files:
+        return {"files": []}
+
+    return {"files": user_files}
+
+
+def getFile(file_id: str):
+    # Получаем файл из GridFS
+    file_data = fs.get(ObjectId(file_id))
+
+    # Создаем генератор для чтения файла по частям (например, по 4KB)
+    def iter_file(file_data):
+        while True:
+            data = file_data.read(4096)  # Чтение по 4KB
+            if not data:
+                break
+            yield data
+
+    # Создаем потоковый ответ с использованием генератора
+    response = StreamingResponse(
+        iter_file(file_data),
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f"attachment; filename={file_data.filename}"}
+    )
+    return response
