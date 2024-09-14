@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr, Field, validator
 from fastapi import HTTPException, status
 import re
@@ -5,8 +6,8 @@ import re
 class User(BaseModel):
     name: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
-    phone: str = Field(...)
     password: str = Field(..., min_length=6, max_length=30)
+    ort: str = Field(..., min_length=2, max_length=100) 
 
     @validator('password')
     def password_complexity(cls, value):
@@ -37,16 +38,6 @@ class User(BaseModel):
             )
         return value
 
-    @validator('phone')
-    def phone_valid(cls, value):
-        pattern = re.compile(r"^(?:\+?49|0)(?:\d{2}\)?[ -]?\d{2}[ -]?\d{7,8}|\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4})$")
-        if not pattern.match(value):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail='Invalid phone number Invalid phone number. It must be in one of the following formats: '
-                    '+49 30 12345678, 030 12345678, 030-12345678, or (030) 12345678'
-            )
-        return value
-
     @validator('name')
     def name_length(cls, value):
         if len(value) < 3:
@@ -56,5 +47,5 @@ class User(BaseModel):
         return value
 
 class UserLogin(BaseModel):
-    name: str
+    email: str
     password: str

@@ -25,13 +25,13 @@ async def create_user(user: User):
 
 @user.post("/login")
 async def login_user(user: UserLogin):
-    found_user = collection.find_one({"name": user.name})
+    found_user = collection.find_one({"email": user.email})
     
     if not found_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
     
     if Hash.verify(user.password, found_user["password"]):
-        token = jwt.encode({'sub': found_user["name"]}, "test", algorithm='HS256')
+        token = jwt.encode({'sub': found_user["email"]}, "test", algorithm='HS256')
         return {"token": token}
     else:
         raise HTTPException(status_code=400, detail="Invalid credentials")
